@@ -1,0 +1,403 @@
+// src/App.tsx
+import React, { useState } from "react";
+import jsPDF from "jspdf";
+
+function App() {
+  const [nome, setNome] = useState("");
+  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [resumo, setResumo] = useState("");
+  const [habilidades, setHabilidades] = useState<{ nome: string; nivel: string }[]>([
+    { nome: "", nivel: "Básico" },
+  ]);
+  const [experiencias, setExperiencias] = useState<
+    { empresa: string; cargo: string; inicio: string; fim: string; descricao: string }[]
+  >([]);
+  const [novaExperiencia, setNovaExperiencia] = useState({
+    empresa: "",
+    cargo: "",
+    inicio: "",
+    fim: "",
+    descricao: "",
+  });
+  const [showExperienciaForm, setShowExperienciaForm] = useState(false);
+
+  // Novos estados para o modal
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [tema, setTema] = useState<"Moderno" | "Clássico" | "Minimalista">("Moderno");
+  const [cor, setCor] = useState<"Azul" | "Laranja" | "Cinza" | "Verde">("Azul");
+
+  const atualizarHabilidade = (index: number, campo: string, valor: string) => {
+    const novasHabilidades = [...habilidades];
+    novasHabilidades[index][campo as keyof typeof novasHabilidades[0]] = valor;
+    setHabilidades(novasHabilidades);
+  };
+
+  const adicionarHabilidade = () => setHabilidades([...habilidades, { nome: "", nivel: "Básico" }]);
+
+  const adicionarExperiencia = () => {
+    setExperiencias([...experiencias, novaExperiencia]);
+    setNovaExperiencia({ empresa: "", cargo: "", inicio: "", fim: "", descricao: "" });
+    setShowExperienciaForm(false);
+  };
+
+  const cancelarExperiencia = () => {
+    setNovaExperiencia({ empresa: "", cargo: "", inicio: "", fim: "", descricao: "" });
+    setShowExperienciaForm(false);
+  };
+
+  const gerarPDF = () => {
+    const doc = new jsPDF();
+    let y = 20;
+
+    // Escolher cores dependendo da seleção
+    const colorMap: Record<string, string> = {
+      Azul: "#1E40AF",
+      Laranja: "#F97316",
+      Cinza: "#6B7280",
+      Verde: "#16A34A",
+    };
+
+    doc.setTextColor(colorMap[cor]);
+
+    // Tema do layout
+    if (tema === "Minimalista") {
+      doc.setFont("helvetica", "normal");
+    } else if (tema === "Clássico") {
+      doc.setFont("times", "normal");
+    } else {
+      doc.setFont("courier", "bold");
+    }
+
+    doc.setFontSize(18);
+    doc.text(nome || "Seu Nome Completo", 10, y);
+    
+    y += 4;
+    doc.setLineWidth(0.5);
+    doc.line(10, y, 200, y);
+    y += 8;
+    
+    doc.setFontSize(12);
+    doc.text(`Email: ${email || "seu.email@exemplo.com"}`, 10, y);
+    y += 6;
+    doc.text(`Telefone: ${telefone || "(11) 99999-9999"}`, 10, y);
+    y += 6;
+    doc.text(`LinkedIn: ${linkedin || ""}`, 10, y);
+    y += 10;
+
+    doc.setFontSize(14);
+    doc.text("Resumo Profissional:", 10, y);
+    y += 6;
+    doc.setFontSize(12);
+    const resumoLines = doc.splitTextToSize(resumo || "Seu resumo profissional aparecerá aqui...", 180);
+    doc.text(resumoLines, 10, y);
+    y += resumoLines.length * 6 + 6;
+
+    if (habilidades.some((h) => h.nome)) {
+      doc.setFontSize(14);
+      doc.text("Habilidades:", 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      habilidades.forEach((hab) => {
+        if (hab.nome) {
+          doc.text(`- ${hab.nome} (${hab.nivel})`, 12, y);
+          y += 6;
+        }
+      });
+      y += 4;
+    }
+
+    if (experiencias.length > 0) {
+      doc.setFontSize(14);
+      doc.text("Experiência Profissional:", 10, y);
+      y += 6;
+      doc.setFontSize(12);
+      experiencias.forEach((exp) => {
+        doc.text(`${exp.cargo} - ${exp.empresa}`, 12, y);
+        y += 6;
+        doc.text(`${exp.inicio} - ${exp.fim || "Atual"}`, 12, y);
+        y += 6;
+
+        const descricaoLines = doc.splitTextToSize(exp.descricao, 180);
+        doc.text(descricaoLines, 12, y);
+        y += descricaoLines.length * 6 + 6;
+      });
+    }
+
+    doc.save("curriculo.pdf");
+    setShowExportModal(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-100 flex flex-col">
+      {/* Topo azul principal com botão de exportar PDF */}
+      <div className="p-6 bg-blue-800 text-white flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">👩‍💻 Gerador de Currículos AI</h1>
+          <p className="mt-1 text-white">Gerador Inteligente de Currículos com IA</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowExportModal(true)}
+          className="px-4 py-2 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600"
+        >
+          Exportar PDF
+        </button>
+      </div>
+
+      {/* Modal de Exportação */}
+      {showExportModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white rounded-xl p-6 w-96">
+            <h2 className="text-xl font-bold mb-4">Opções de Exportação</h2>
+
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Tema do Layout</label>
+              <select
+                value={tema}
+                onChange={(e) => setTema(e.target.value as any)}
+                className="w-full border rounded-lg p-2"
+              >
+                <option>Moderno</option>
+                <option>Clássico</option>
+                <option>Minimalista</option>
+              </select>
+            </div>
+
+            <div className="mb-4">
+              <label className="block font-medium mb-1">Cor do Layout</label>
+              <select
+                value={cor}
+                onChange={(e) => setCor(e.target.value as any)}
+                className="w-full border rounded-lg p-2"
+              >
+                <option>Azul</option>
+                <option>Laranja</option>
+                <option>Cinza</option>
+                <option>Verde</option>
+              </select>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                type="button"
+                onClick={gerarPDF}
+                className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+              >
+                Gerar PDF
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowExportModal(false)}
+                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="flex-1 overflow-y-auto p-6 bg-blue-100 rounded-b-2xl">
+        <div className="grid grid-cols-2 gap-6">
+          {/* Coluna esquerda - Formulário */}
+          <div className="bg-white p-6 rounded-2xl shadow-md max-h-[80vh] overflow-y-auto">
+            {/* Formulário */}
+            <div className="mb-4 p-4 bg-blue-200 rounded-xl shadow-sm">
+              <h2 className="text-xl font-bold text-blue-900 mb-1">Informações do Currículo</h2>
+              <p className="text-blue-800 text-sm">Preencha os dados e veja o preview em tempo real</p>
+            </div>
+            <form className="space-y-4">
+              {/* Campos básicos */}
+              {[{ label: "Nome", value: nome, setter: setNome, type: "text", placeholder: "Digite seu nome" },
+                { label: "Email", value: email, setter: setEmail, type: "email", placeholder: "Digite seu email" },
+                { label: "Telefone", value: telefone, setter: setTelefone, type: "text", placeholder: "Digite seu telefone" },
+                { label: "LinkedIn", value: linkedin, setter: setLinkedin, type: "text", placeholder: "Digite seu LinkedIn" }].map((campo) => (
+                <div key={campo.label}>
+                  <label className="block font-medium">{campo.label}</label>
+                  <input
+                    type={campo.type}
+                    value={campo.value}
+                    onChange={(e) => campo.setter(e.target.value)}
+                    className="w-full border rounded-lg p-2"
+                    placeholder={campo.placeholder}
+                  />
+                </div>
+              ))}
+
+              {/* Resumo Profissional */}
+              <div>
+                <label className="block font-medium">Resumo Profissional</label>
+                <textarea
+                  value={resumo}
+                  onChange={(e) => setResumo(e.target.value)}
+                  className="w-full border rounded-lg p-2"
+                  rows={5}
+                  placeholder="Digite um resumo profissional"
+                />
+              </div>
+
+              {/* Habilidades */}
+              <div>
+                <label className="block font-medium text-lg font-bold">Habilidades</label>
+                {habilidades.map((hab, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={hab.nome}
+                      onChange={(e) => atualizarHabilidade(index, "nome", e.target.value)}
+                      className="flex-1 border rounded-lg p-2"
+                      placeholder="Nome da habilidade"
+                    />
+                    <select
+                      value={hab.nivel}
+                      onChange={(e) => atualizarHabilidade(index, "nivel", e.target.value)}
+                      className="border rounded-lg p-2"
+                    >
+                      <option>Básico</option>
+                      <option>Intermediário</option>
+                      <option>Avançado</option>
+                    </select>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={adicionarHabilidade}
+                  className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                >
+                  Adicionar Habilidade
+                </button>
+              </div>
+
+              {/* Experiências */}
+              <div>
+                <label className="block font-medium text-lg font-bold">Experiência Profissional</label>
+                <p className="text-sm text-gray-600 mb-2">Adicione suas experiências de trabalho mais relevantes</p>
+                {!showExperienciaForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowExperienciaForm(true)}
+                    className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                  >
+                    Adicionar Experiência
+                  </button>
+                )}
+                {showExperienciaForm && (
+                  <div className="space-y-2 mt-2 border p-4 rounded-lg bg-gray-50">
+                    {["empresa", "cargo"].map((campo) => (
+                      <input
+                        key={campo}
+                        type="text"
+                        placeholder={campo === "empresa" ? "Empresa *" : "Cargo *"}
+                        value={(novaExperiencia as any)[campo]}
+                        onChange={(e) =>
+                          setNovaExperiencia({ ...novaExperiencia, [campo]: e.target.value })
+                        }
+                        className="w-full border rounded-lg p-2"
+                      />
+                    ))}
+                    <div className="flex gap-2">
+                      {["inicio", "fim"].map((campo) => (
+                        <input
+                          key={campo}
+                          type="month"
+                          placeholder={campo === "inicio" ? "Data de Início" : "Data de Fim"}
+                          value={(novaExperiencia as any)[campo]}
+                          onChange={(e) =>
+                            setNovaExperiencia({ ...novaExperiencia, [campo]: e.target.value })
+                          }
+                          className="w-1/2 border rounded-lg p-2"
+                        />
+                      ))}
+                    </div>
+                    <textarea
+                      placeholder="Descrição das Atividades"
+                      value={novaExperiencia.descricao}
+                      onChange={(e) =>
+                        setNovaExperiencia({ ...novaExperiencia, descricao: e.target.value })
+                      }
+                      className="w-full border rounded-lg p-2"
+                      rows={3}
+                    />
+                    <div className="flex gap-2 mt-2">
+                      <button
+                        type="button"
+                        onClick={adicionarExperiencia}
+                        className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                      >
+                        Adicionar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={cancelarExperiencia}
+                        className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </form>
+          </div>
+
+          {/* Coluna direita - Preview */}
+          <div className="bg-white p-6 rounded-2xl shadow-md max-h-[80vh] overflow-y-auto">
+            <div className="mb-4 p-4 bg-blue-200 rounded-xl shadow-sm text-left">
+              <h2 className="text-xl font-bold text-blue-900">Preview do Currículo</h2>
+              {!nome && <p className="text-blue-800 text-sm">Visualização em tempo real</p>}
+            </div>
+
+            <div className="space-y-4">
+              <div className="border-b pb-2 mb-4">
+                <h1 className={`${nome ? "text-2xl font-bold text-black" : "text-gray-400 italic"}`}>
+                  {nome || "Seu Nome Completo"}
+                </h1>
+                <p className="text-gray-500 italic">
+                  {email || "seu.email@exemplo.com"} • {telefone || "(11) 99999-9999"}
+                </p>
+                <p className="text-gray-500 italic">{linkedin || ""}</p>
+                <p className="mt-2 text-gray-700">{resumo || "Seu resumo profissional aparecerá aqui..."}</p>
+              </div>
+
+              {habilidades.some((h) => h.nome) && (
+                <div className="mb-4">
+                  <h3 className="text-lg font-bold mb-1">Habilidades</h3>
+                  <ul className="list-disc ml-5">
+                    {habilidades.map(
+                      (hab, idx) =>
+                        hab.nome && (
+                          <li key={idx}>
+                            {hab.nome} - <span className="text-sm text-gray-600">{hab.nivel}</span>
+                          </li>
+                        )
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {experiencias.length > 0 && (
+                <div>
+                  <h3 className="text-lg font-bold mb-2">Experiência Profissional</h3>
+                  {experiencias.map((exp, idx) => (
+                    <div key={idx} className="mb-4 border-b pb-2">
+                      <p className="font-bold">{exp.cargo}</p>
+                      <p className="text-gray-600">{exp.empresa}</p>
+                      <p className="text-gray-500 text-sm">
+                        {exp.inicio} - {exp.fim || "Atual"}
+                      </p>
+                      <p className="mt-1">{exp.descricao}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+export default App;

@@ -3,6 +3,8 @@
 Um aplicativo moderno para criar e exportar currículos personalizados em **PDF**, com design limpo e profissional.  
 O projeto foi desenvolvido com **React + TypeScript + TailwindCSS**, e utiliza a biblioteca **jsPDF** para gerar os PDFs de forma dinâmica.
 
+Acesse o projeto online em: [**geradorcv.vercel.app**](https://geradorcv.vercel.app)
+
 ---
 
 ## 🚀 Funcionalidades

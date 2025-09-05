@@ -1,12 +1,29 @@
-# React + Vite
+# 📄 Gerador de Currículos (CV Builder)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Um aplicativo moderno para criar e exportar currículos personalizados em **PDF**, com design limpo e profissional.  
+O projeto foi desenvolvido com **React + TypeScript + TailwindCSS**, e utiliza a biblioteca **jsPDF** para gerar os PDFs de forma dinâmica.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Funcionalidades
 
-## Expanding the ESLint configuration
+- ✍️ **Preenchimento de Dados**: Adicione informações pessoais, resumo profissional, habilidades, formações e experiências.
+- 🎨 **Temas Personalizados**: Escolha diferentes cores e estilos para o currículo.
+- 📑 **Exportação em PDF**: Geração automática de currículo pronto para impressão.
+- ⚡ **Interface Responsiva**: Funciona bem em desktop e dispositivos móveis.
+- ☁️ **Deploy Fácil**: Compatível com **Vercel** para hospedagem online.
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 🛠️ Tecnologias Utilizadas
+
+- [React](https://react.dev/)  
+- [TypeScript](https://www.typescriptlang.org/)  
+- [TailwindCSS](https://tailwindcss.com/)  
+- [jsPDF](https://github.com/parallax/jsPDF)  
+- [Vite](https://vitejs.dev/)
+
+---
+
+## 📂 Estrutura do Projeto
+
